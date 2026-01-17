@@ -24,6 +24,6 @@ public record Profile(
     }
 
     public static Profile empty() {
-        return new Profile(null, null, null, null);
+        return new Profile(BigDecimal.ZERO, 0, 0, 0);
     }
 }
