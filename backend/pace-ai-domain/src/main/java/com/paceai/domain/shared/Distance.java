@@ -15,10 +15,10 @@ public final class Distance {
 
     private Distance(double value, DistanceUnit unit) {
         if (value < 0) {
-            throw new IllegalArgumentException("Distance cannot be negative");
+            throw new IllegalArgumentException("A distância não pode ser negativa");
         }
         this.value = value;
-        this.unit = Objects.requireNonNull(unit, "Unit cannot be null");
+        this.unit = Objects.requireNonNull(unit, "A unidade não pode estar vazia.");
     }
 
     public static Distance ofKilometers(double km) {
@@ -66,6 +66,11 @@ public final class Distance {
     @Override
     public int hashCode() {
         return Objects.hash(getValueInKilometers());
+    }
+
+    public Distance add(Distance other) {
+        double totalKm = this.getValueInKilometers() + other.getValueInKilometers();
+        return new Distance(totalKm, DistanceUnit.KILOMETERS);
     }
 
     @Override

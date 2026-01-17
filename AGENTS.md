@@ -48,6 +48,34 @@ All new features must follow the TDD workflow: **RED → GREEN → Refactor**.
 - **Early Return:** Use early returns to reduce nesting and improve readability.
 - **State Machine for Enums:** Use state machine patterns for enums where it makes sense (e.g., `TrainingSessionStatus`).
 
+### Design Patterns
+- **Static Factory Methods vs Builder Pattern:**
+  - Use **Static Factory Methods** for simple object creation with few parameters (≤ 4 mandatory fields)
+  - Use **Static Factory Methods** when you can provide descriptive names (e.g., `createForNewAthlete()`)
+  - Use **Builder Pattern** only when you have many mandatory fields (≥ 5) or a mix of required/optional parameters
+  - Example: `TrainingPlan.create(id, athleteId, volume, date)` instead of `TrainingPlan.builder().id(id).build()`
+
+- **Utility Classes:**
+  - Enforce noninstantiability for utility classes containing only static members
+  - Make class `final`, add a private constructor that throws `AssertionError`
+  - Example:
+    ```java
+    public final class Identifiers {
+        private Identifiers() {
+            throw new AssertionError("Identifiers is a utility class and cannot be instantiated");
+        }
+        public static UUID newId() { /* ... */ }
+    }
+    ```
+
+### UUID Strategy
+- **UUID Version 7 (Time-Ordered):**
+  - All entity IDs must use **UUID v7** for time-ordered, database-friendly identifiers
+  - Use `Identifiers.newId()` utility class from `com.paceai.domain.shared`
+  - Never use `UUID.randomUUID()` (v4) as it causes index fragmentation in databases
+  - UUID v7 provides natural sorting by creation time and better database index performance
+  - Dependency: `uuid-creator` library provides `UuidCreator.getTimeOrderedEpoch()`
+
 ### Documentation
 - **Always consult the `docs/` folder** before implementing new features. It contains the PRD, requirements, and architectural decisions.
 
