@@ -1,9 +1,23 @@
 package com.paceai.infrastructure.persistence.postgres;
 
-import jakarta.persistence.*;
-
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import com.paceai.infrastructure.persistence.postgres.entity.SessionEntity;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 /**
  * JPA Entity for Training Plan.
@@ -37,8 +51,10 @@ public class PlanEntity {
     @Column(name = "ai_model_version")
     private String aiModelVersion;
 
-    // JPA requires default constructor
-    protected PlanEntity() {}
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<SessionEntity> sessions = new ArrayList<>();
+
+    public PlanEntity() {}
 
     // Getters and Setters
     public UUID getId() {
@@ -87,6 +103,14 @@ public class PlanEntity {
 
     public void setAiModelVersion(String aiModelVersion) {
         this.aiModelVersion = aiModelVersion;
+    }
+
+    public List<SessionEntity> getSessions() {
+        return sessions;
+    }
+
+    public void setSessions(List<SessionEntity> sessions) {
+        this.sessions = sessions;
     }
 
     // JPA Enums (Infrastructure-specific)
