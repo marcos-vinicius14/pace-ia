@@ -1,4 +1,4 @@
-package com.paceai.domain.training;
+package com.paceai.domain.training.plan;
 
 /**
  * Goal Distance Enum with State Machine behavior.

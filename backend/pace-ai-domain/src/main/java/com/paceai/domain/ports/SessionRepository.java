@@ -2,15 +2,16 @@ package com.paceai.domain.ports;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-import com.paceai.domain.training.Session;
+import com.paceai.domain.training.session.Session;
+import com.paceai.domain.training.SessionId;
+import com.paceai.domain.training.TrainingPlanId;
 
 public interface SessionRepository {
 
     Session save(Session session);
-    Optional<Session> findById(UUID id);
-    List<Session> findByPlanId(UUID planId);
-    void deleteById(UUID id);
-    boolean existsById(UUID id);
+    Optional<Session> findById(SessionId id);
+    List<Session> findByPlanId(TrainingPlanId planId);
+    void deleteById(SessionId id);
+    boolean existsById(SessionId id);
 }

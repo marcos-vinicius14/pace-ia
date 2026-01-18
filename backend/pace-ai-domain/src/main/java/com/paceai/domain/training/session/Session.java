@@ -1,31 +1,26 @@
-package com.paceai.domain.training;
+package com.paceai.domain.training.session;
 
+import com.paceai.domain.training.SessionId;
+import com.paceai.domain.training.TrainingPlanId;
 import java.time.LocalDate;
-import java.util.UUID;
+import java.util.Objects;
 
-/**
- * Training Session Domain Entity.
- * <p>
- * Represents a single workout session within a training plan.
- * Immutable entity following Rich Domain Model principles.
- * </p>
- */
 public final class Session {
 
-    private final UUID id;
-    private final UUID planId;
+    private final SessionId id;
+    private final TrainingPlanId planId;
     private final LocalDate scheduledDate;
     private final SessionType type;
     private final SessionStatus status;
     private final String details;
-    private final Long stravaActivityId;
+    private final Long stravaActivityId; // Could be wrapped, but keeping as Long for now per strictness balance
 
     private Session(Builder builder) {
-        this.id = builder.id;
-        this.planId = builder.planId;
-        this.scheduledDate = builder.scheduledDate;
-        this.type = builder.type;
-        this.status = builder.status;
+        this.id = Objects.requireNonNull(builder.id);
+        this.planId = Objects.requireNonNull(builder.planId);
+        this.scheduledDate = Objects.requireNonNull(builder.scheduledDate);
+        this.type = Objects.requireNonNull(builder.type);
+        this.status = Objects.requireNonNull(builder.status);
         this.details = builder.details;
         this.stravaActivityId = builder.stravaActivityId;
     }
@@ -34,38 +29,35 @@ public final class Session {
         return new Builder();
     }
 
-    // Getters
-    public UUID getId() {
+    public SessionId id() {
         return id;
     }
 
-    public UUID getPlanId() {
+    public TrainingPlanId planId() {
         return planId;
     }
 
-    public LocalDate getScheduledDate() {
+    public LocalDate scheduledDate() {
         return scheduledDate;
     }
 
-    public SessionType getType() {
+    public SessionType type() {
         return type;
     }
 
-    public SessionStatus getStatus() {
+    public SessionStatus status() {
         return status;
     }
 
-    public String getDetails() {
+    public String details() {
         return details;
     }
 
-    public Long getStravaActivityId() {
+    public Long stravaActivityId() {
         return stravaActivityId;
     }
 
-    // Domain Behavior
     public Session markAsCompleted(Long stravaActivityId) {
-        // TODO: Validate transition and return new immutable instance
         return Session.builder()
                 .id(this.id)
                 .planId(this.planId)
@@ -78,8 +70,8 @@ public final class Session {
     }
 
     public static final class Builder {
-        private UUID id;
-        private UUID planId;
+        private SessionId id;
+        private TrainingPlanId planId;
         private LocalDate scheduledDate;
         private SessionType type;
         private SessionStatus status = SessionStatus.PENDING;
@@ -88,12 +80,12 @@ public final class Session {
 
         private Builder() {}
 
-        public Builder id(UUID id) {
+        public Builder id(SessionId id) {
             this.id = id;
             return this;
         }
 
-        public Builder planId(UUID planId) {
+        public Builder planId(TrainingPlanId planId) {
             this.planId = planId;
             return this;
         }

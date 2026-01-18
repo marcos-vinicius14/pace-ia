@@ -1,20 +1,19 @@
 package com.paceai.domain.ports;
 
-import com.paceai.domain.training.Plan;
+import com.paceai.domain.athlete.AthleteId;
+import com.paceai.domain.training.plan.TrainingPlan;
+import com.paceai.domain.training.TrainingPlanId;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
- * Plan Repository Port (Interface).
+ * Training Plan Repository Port (Interface).
  * <p>
- * This is a Port (in Hexagonal Architecture terms) that defines the contract
- * for persisting and retrieving Training Plans. The implementation lives in
- * the Infrastructure module.
+ * Defines the contract for persisting and retrieving Training Plans.
  * </p>
  */
-public interface PlanRepository {
+public interface TrainingPlanRepository {
 
     /**
      * Saves a plan to the repository.
@@ -22,7 +21,7 @@ public interface PlanRepository {
      * @param plan the plan to save
      * @return the saved plan
      */
-    Plan save(Plan plan);
+    TrainingPlan save(TrainingPlan plan);
 
     /**
      * Finds a plan by its ID.
@@ -30,7 +29,7 @@ public interface PlanRepository {
      * @param id the plan ID
      * @return the plan if found
      */
-    Optional<Plan> findById(UUID id);
+    Optional<TrainingPlan> findById(TrainingPlanId id);
 
     /**
      * Finds all plans for a given athlete.
@@ -38,14 +37,14 @@ public interface PlanRepository {
      * @param athleteId the athlete ID
      * @return list of plans
      */
-    List<Plan> findByAthleteId(UUID athleteId);
+    List<TrainingPlan> findByAthleteId(AthleteId athleteId);
 
     /**
      * Deletes a plan by its ID.
      *
      * @param id the plan ID
      */
-    void deleteById(UUID id);
+    void deleteById(TrainingPlanId id);
 
     /**
      * Checks if a plan exists by its ID.
@@ -53,5 +52,5 @@ public interface PlanRepository {
      * @param id the plan ID
      * @return true if exists
      */
-    boolean existsById(UUID id);
+    boolean existsById(TrainingPlanId id);
 }

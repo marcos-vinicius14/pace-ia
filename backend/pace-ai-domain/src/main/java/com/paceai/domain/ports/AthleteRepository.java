@@ -1,9 +1,9 @@
 package com.paceai.domain.ports;
 
-import com.paceai.domain.athlete.Athlete;
-
 import java.util.Optional;
-import java.util.UUID;
+
+import com.paceai.domain.athlete.Athlete;
+import com.paceai.domain.athlete.AthleteId;
 
 /**
  * Athlete Repository Port (Interface).
@@ -14,14 +14,10 @@ import java.util.UUID;
 public interface AthleteRepository {
 
     Athlete save(Athlete athlete);
-
-    Optional<Athlete> findById(UUID id);
-
+    Optional<Athlete> findById(AthleteId id);
     Optional<Athlete> findByStravaId(Long stravaId);
-
     Optional<Athlete> findByEmail(String email);
+    void deleteById(AthleteId id);
+    boolean existsById(AthleteId id);
 
-    void deleteById(UUID id);
-
-    boolean existsById(UUID id);
 }
