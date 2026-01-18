@@ -1,4 +1,4 @@
-package com.paceai.domain.training;
+package com.paceai.domain.training.session;
 
 /**
  * Session Type Enum.

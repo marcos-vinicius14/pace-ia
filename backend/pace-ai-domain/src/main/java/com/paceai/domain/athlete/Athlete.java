@@ -2,7 +2,7 @@ package com.paceai.domain.athlete;
 
 import com.paceai.domain.shared.Email;
 
-import java.util.UUID;
+import java.util.Objects;
 
 /**
  * Athlete Domain Aggregate Root.
@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 public final class Athlete {
 
-    private final UUID id;
+    private final AthleteId id;
     private final Long stravaId;
     private final Email email;
     private final Profile profile;
@@ -21,7 +21,7 @@ public final class Athlete {
     private final String stravaRefreshToken;
 
     private Athlete(Builder builder) {
-        this.id = builder.id;
+        this.id = Objects.requireNonNull(builder.id);
         this.stravaId = builder.stravaId;
         this.email = builder.email;
         this.profile = builder.profile;
@@ -33,28 +33,28 @@ public final class Athlete {
         return new Builder();
     }
 
-    // Getters
-    public UUID getId() {
+    // Accessors (Fluent)
+    public AthleteId id() {
         return id;
     }
 
-    public Long getStravaId() {
+    public Long stravaId() {
         return stravaId;
     }
 
-    public Email getEmail() {
+    public Email email() {
         return email;
     }
 
-    public Profile getProfile() {
+    public Profile profile() {
         return profile;
     }
 
-    public String getStravaAccessToken() {
+    public String stravaAccessToken() {
         return stravaAccessToken;
     }
 
-    public String getStravaRefreshToken() {
+    public String stravaRefreshToken() {
         return stravaRefreshToken;
     }
 
@@ -71,7 +71,7 @@ public final class Athlete {
     }
 
     public static final class Builder {
-        private UUID id;
+        private AthleteId id;
         private Long stravaId;
         private Email email;
         private Profile profile;
@@ -80,7 +80,7 @@ public final class Athlete {
 
         private Builder() {}
 
-        public Builder id(UUID id) {
+        public Builder id(AthleteId id) {
             this.id = id;
             return this;
         }

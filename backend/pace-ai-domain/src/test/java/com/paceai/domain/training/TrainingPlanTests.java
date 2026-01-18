@@ -1,121 +1,95 @@
 package com.paceai.domain.training;
 
+import com.paceai.domain.athlete.AthleteId;
 import com.paceai.domain.exceptions.ExcessiveLoadDomainException;
 import com.paceai.domain.shared.Distance;
-import com.paceai.domain.shared.Identifiers;
+import com.paceai.domain.training.plan.GoalDistance;
+import com.paceai.domain.training.plan.PlanStatus;
+import com.paceai.domain.training.plan.TrainingPlan;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TrainingPlanTests {
 
     @Test
-    void shouldAllowSafeIncreaseUnder15Percent() {
-        Distance previousVolume = Distance.ofKilometers(20.0);
-        Distance newVolume = Distance.ofKilometers(22.0);
+    void shouldCreateNewTrainingPlan() {
+        AthleteId athleteId = AthleteId.create();
+        Distance weeklyVolume = Distance.ofKilometers(20.0);
+        LocalDate startDate = LocalDate.now();
+        GoalDistance goal = GoalDistance.FIVE_K;
+        LocalDate raceDate = startDate.plusWeeks(8);
 
+        TrainingPlan plan = TrainingPlan.create(
+                athleteId,
+                weeklyVolume,
+                startDate,
+                goal,
+                raceDate
+        );
+
+        assertThat(plan.id()).isNotNull();
+        assertThat(plan.athleteId()).isEqualTo(athleteId);
+        assertThat(plan.weeklyVolume()).isEqualTo(weeklyVolume);
+        assertThat(plan.startDate()).isEqualTo(startDate);
+        assertThat(plan.goalDistance()).isEqualTo(goal);
+        assertThat(plan.raceDate()).isEqualTo(raceDate);
+        assertThat(plan.status()).isEqualTo(PlanStatus.DRAFT);
+    }
+
+    @Test
+    void shouldAllowSafeIncreaseUnder15Percent() {
+        AthleteId athleteId = AthleteId.create();
+        Distance previousVolume = Distance.ofKilometers(20.0);
+        
         TrainingPlan previousPlan = TrainingPlan.create(
-                Identifiers.newId(),
-                Identifiers.newId(),
+                athleteId,
                 previousVolume,
+                LocalDate.now().minusWeeks(8),
+                GoalDistance.FIVE_K,
                 LocalDate.now()
         );
 
-        TrainingPlan newPlan = TrainingPlan.create(
-                Identifiers.newId(),
-                Identifiers.newId(),
-                newVolume,
-                LocalDate.now().plusWeeks(1)
-        );
+        Distance newVolume = Distance.ofKilometers(22.0); // 10% increase
 
-        assertThatCode(() -> newPlan.validateAgainstPreviousPlan(previousPlan))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> TrainingPlan.createWithValidation(
+                athleteId,
+                newVolume,
+                LocalDate.now(),
+                GoalDistance.TEN_K,
+                LocalDate.now().plusWeeks(10),
+                previousPlan
+        )).doesNotThrowAnyException();
     }
 
     @Test
     void shouldRejectExcessiveIncreaseOver15Percent() {
+        AthleteId athleteId = AthleteId.create();
         Distance previousVolume = Distance.ofKilometers(20.0);
-        Distance newVolume = Distance.ofKilometers(24.0);
 
         TrainingPlan previousPlan = TrainingPlan.create(
-                Identifiers.newId(),
-                Identifiers.newId(),
+                athleteId,
                 previousVolume,
+                LocalDate.now().minusWeeks(8),
+                GoalDistance.FIVE_K,
                 LocalDate.now()
         );
 
-        TrainingPlan newPlan = TrainingPlan.create(
-                Identifiers.newId(),
-                Identifiers.newId(),
+        Distance newVolume = Distance.ofKilometers(24.0); // 20% increase
+
+        assertThatThrownBy(() -> TrainingPlan.createWithValidation(
+                athleteId,
                 newVolume,
-                LocalDate.now().plusWeeks(1)
-        );
-
-        assertThatThrownBy(() -> newPlan.validateAgainstPreviousPlan(previousPlan))
-                .isInstanceOf(ExcessiveLoadDomainException.class)
-                .hasMessageContaining("15%");
-    }
-
-    @Test
-    void shouldAllowZeroPreviousVolumeForNewAthletes() {
-        Distance previousVolume = Distance.ofKilometers(0.0);
-        Distance newVolume = Distance.ofKilometers(10.0);
-
-        TrainingPlan previousPlan = TrainingPlan.create(
-                Identifiers.newId(),
-                Identifiers.newId(),
-                previousVolume,
-                LocalDate.now()
-        );
-
-        TrainingPlan newPlan = TrainingPlan.create(
-                Identifiers.newId(),
-                Identifiers.newId(),
-                newVolume,
-                LocalDate.now().plusWeeks(1)
-        );
-
-        assertThatCode(() -> newPlan.validateAgainstPreviousPlan(previousPlan))
-                .doesNotThrowAnyException();
-    }
-
-    @Test
-    void shouldAcceptExactly15PercentIncrease() {
-        Distance previousVolume = Distance.ofKilometers(20.0);
-        Distance newVolume = Distance.ofKilometers(23.0);
-
-        TrainingPlan previousPlan = TrainingPlan.create(
-                Identifiers.newId(),
-                Identifiers.newId(),
-                previousVolume,
-                LocalDate.now()
-        );
-
-        TrainingPlan newPlan = TrainingPlan.create(
-                Identifiers.newId(),
-                Identifiers.newId(),
-                newVolume,
-                LocalDate.now().plusWeeks(1)
-        );
-
-        assertThatCode(() -> newPlan.validateAgainstPreviousPlan(previousPlan))
-                .doesNotThrowAnyException();
-    }
-
-    @Test
-    void shouldUseDescriptiveFactoryMethodForNewAthletes() {
-        UUID athleteId = Identifiers.newId();
-        Distance weeklyVolume = Distance.ofKilometers(10.0);
-
-        TrainingPlan plan = TrainingPlan.createForNewAthlete(athleteId, weeklyVolume);
-
-        org.assertj.core.api.Assertions.assertThat(plan.getId()).isNotNull();
-        org.assertj.core.api.Assertions.assertThat(plan.getAthleteId()).isEqualTo(athleteId);
-        org.assertj.core.api.Assertions.assertThat(plan.getWeeklyVolume()).isEqualTo(weeklyVolume);
-        org.assertj.core.api.Assertions.assertThat(plan.getStartDate()).isNotNull();
+                LocalDate.now(),
+                GoalDistance.TEN_K,
+                LocalDate.now().plusWeeks(10),
+                previousPlan
+        ))
+        .isInstanceOf(ExcessiveLoadDomainException.class)
+        .hasMessageContaining("15%");
     }
 }

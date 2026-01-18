@@ -1,6 +1,6 @@
 package com.paceai.domain.ports;
 
-import com.paceai.domain.training.Plan;
+import com.paceai.domain.training.plan.TrainingPlan;
 
 /**
  * AI Gateway Port (Interface).
@@ -17,7 +17,7 @@ public interface AIGatewayPort {
      * @param request the plan generation request
      * @return the generated plan
      */
-    Plan generatePlan(PlanGenerationRequest request);
+    TrainingPlan generatePlan(PlanGenerationRequest request);
 
     /**
      * Request object for plan generation.
