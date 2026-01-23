@@ -1,0 +1,18 @@
+package com.paceai.core.domain.training.session;
+
+/**
+ * Session Type Enum.
+ * <p>
+ * Defines the type of workout for a training session.
+ * </p>
+ */
+public enum SessionType {
+    REST,
+    EASY,
+    LONG_RUN,
+    TEMPO,
+    INTERVAL,
+    FARTLEK,
+    RECOVERY,
+    RACE
+}
