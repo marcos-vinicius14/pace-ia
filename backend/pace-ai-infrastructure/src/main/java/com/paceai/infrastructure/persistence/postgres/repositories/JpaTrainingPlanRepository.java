@@ -1,4 +1,4 @@
-package com.paceai.infrastructure.persistence.postgres;
+package com.paceai.infrastructure.persistence.postgres.repositories;
 
 import com.paceai.infrastructure.persistence.postgres.entity.TrainingPlanEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

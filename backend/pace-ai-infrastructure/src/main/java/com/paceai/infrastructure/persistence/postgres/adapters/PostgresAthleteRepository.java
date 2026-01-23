@@ -1,10 +1,11 @@
-package com.paceai.infrastructure.persistence.postgres;
+package com.paceai.infrastructure.persistence.postgres.adapters;
 
 import com.paceai.domain.athlete.Athlete;
 import com.paceai.domain.athlete.AthleteId;
 import com.paceai.domain.ports.AthleteRepository;
 import com.paceai.infrastructure.persistence.postgres.entity.AthleteEntity;
 import com.paceai.infrastructure.persistence.postgres.mappers.AthleteJpaMapper;
+import com.paceai.infrastructure.persistence.postgres.repositories.JpaAthleteRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

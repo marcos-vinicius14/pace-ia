@@ -1,4 +1,4 @@
-package com.paceai.infrastructure.persistence.postgres;
+package com.paceai.infrastructure.persistence.postgres.adapters;
 
 import com.paceai.domain.ports.SessionRepository;
 import com.paceai.domain.training.SessionId;
@@ -6,6 +6,7 @@ import com.paceai.domain.training.TrainingPlanId;
 import com.paceai.domain.training.session.Session;
 import com.paceai.infrastructure.persistence.postgres.entity.SessionEntity;
 import com.paceai.infrastructure.persistence.postgres.mappers.SessionJpaMapper;
+import com.paceai.infrastructure.persistence.postgres.repositories.JpaSessionRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

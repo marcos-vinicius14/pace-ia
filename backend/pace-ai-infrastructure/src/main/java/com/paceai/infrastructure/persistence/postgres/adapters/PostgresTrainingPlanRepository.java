@@ -1,4 +1,4 @@
-package com.paceai.infrastructure.persistence.postgres;
+package com.paceai.infrastructure.persistence.postgres.adapters;
 
 import com.paceai.domain.athlete.AthleteId;
 import com.paceai.domain.exceptions.EntityNotFoundException;
@@ -11,6 +11,7 @@ import com.paceai.infrastructure.persistence.postgres.entity.SessionEntity;
 import com.paceai.infrastructure.persistence.postgres.entity.TrainingPlanEntity;
 import com.paceai.infrastructure.persistence.postgres.mappers.SessionJpaMapper;
 import com.paceai.infrastructure.persistence.postgres.mappers.TrainingPlanJpaMapper;
+import com.paceai.infrastructure.persistence.postgres.repositories.JpaTrainingPlanRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

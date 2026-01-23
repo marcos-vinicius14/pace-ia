@@ -1,4 +1,4 @@
-package com.paceai.infrastructure.persistence.postgres;
+package com.paceai.infrastructure.persistence.postgres.repositories;
 
 import java.util.Optional;
 
