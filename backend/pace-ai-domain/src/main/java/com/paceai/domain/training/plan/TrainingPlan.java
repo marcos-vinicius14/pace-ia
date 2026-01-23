@@ -1,7 +1,7 @@
 package com.paceai.domain.training.plan;
 
 import com.paceai.domain.athlete.AthleteId;
-import com.paceai.domain.exceptions.ExcessiveLoadDomainException;
+import com.paceai.domain.shared.Result;
 import com.paceai.domain.shared.Distance;
 import com.paceai.domain.training.TrainingPlanId;
 import com.paceai.domain.training.session.Sessions;
@@ -62,7 +62,7 @@ public final class TrainingPlan {
         );
     }
 
-    public static TrainingPlan createWithValidation(
+    public static Result<TrainingPlan> createWithValidation(
             AthleteId athleteId,
             Distance weeklyVolume,
             LocalDate startDate,
@@ -70,9 +70,13 @@ public final class TrainingPlan {
             LocalDate raceDate,
             TrainingPlan previousPlan
     ) {
-        validateProgression(weeklyVolume, previousPlan.weeklyVolume());
+        Result<Void> validationResult = validateProgression(weeklyVolume, previousPlan.weeklyVolume());
         
-        return new TrainingPlan(
+        if (validationResult.isFailure()) {
+            return Result.failure(validationResult.getErrorMessage());
+        }
+
+        return Result.success(new TrainingPlan(
                 TrainingPlanId.create(),
                 athleteId,
                 weeklyVolume,
@@ -82,22 +86,47 @@ public final class TrainingPlan {
                 PlanStatus.DRAFT,
                 Sessions.empty(),
                 "v1"
-        );
+        ));
     }
 
-    private static void validateProgression(Distance current, Distance previous) {
+    private static Result<Void> validateProgression(Distance current, Distance previous) {
         double previousKm = previous.getValueInKilometers();
-        if (previousKm <= 0) return;
+        if (previousKm <= 0) return Result.success(null);
 
         double currentKm = current.getValueInKilometers();
         double increase = ((currentKm - previousKm) / previousKm) * 100;
 
         if (increase > 15.0) {
-             throw new ExcessiveLoadDomainException(
+             return Result.failure(
                     String.format("Excessive load: %.2f%% increase exceeds 15%% limit. Previous: %.2f km, New: %.2f km",
                             increase, previousKm, currentKm)
             );
         }
+        return Result.success(null);
+    }
+
+    public static TrainingPlan reconstitute(
+            TrainingPlanId id,
+            AthleteId athleteId,
+            Distance weeklyVolume,
+            LocalDate startDate,
+            GoalDistance goalDistance,
+            LocalDate raceDate,
+            PlanStatus status,
+            Sessions sessions,
+            String aiModelVersion
+    ) {
+        return new TrainingPlan(
+                id,
+                athleteId,
+                weeklyVolume,
+                startDate,
+                goalDistance,
+                raceDate,
+                status,
+                sessions,
+                aiModelVersion
+        );
     }
 
     public TrainingPlanId id() { return id; }

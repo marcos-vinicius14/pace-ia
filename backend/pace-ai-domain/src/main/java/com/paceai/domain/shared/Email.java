@@ -18,17 +18,25 @@ public final class Email {
     private final String value;
 
     private Email(String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Email cannot be empty");
-        }
-        if (!EMAIL_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid email format: " + value);
-        }
         this.value = value.toLowerCase();
     }
 
+    public static Result<Email> create(String value) {
+        if (value == null || value.isBlank()) {
+            return Result.failure("Email cannot be empty");
+        }
+        if (!EMAIL_PATTERN.matcher(value).matches()) {
+            return Result.failure("Invalid email format: " + value);
+        }
+        return Result.success(new Email(value));
+    }
+
+    /**
+     * @deprecated Use create(String) instead. This method throws exceptions.
+     */
+    @Deprecated
     public static Email of(String value) {
-        return new Email(value);
+        return create(value).orElseThrow(IllegalArgumentException::new);
     }
 
     public String getValue() {

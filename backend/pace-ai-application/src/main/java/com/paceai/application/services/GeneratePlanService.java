@@ -2,8 +2,8 @@ package com.paceai.application.services;
 
 import com.paceai.domain.ports.AIGatewayPort;
 import com.paceai.domain.ports.EventPublisher;
-import com.paceai.domain.ports.PlanRepository;
-import com.paceai.domain.training.Plan;
+import com.paceai.domain.ports.TrainingPlanRepository;
+import com.paceai.domain.training.plan.TrainingPlan;
 
 /**
  * Generate Plan Use Case (Application Service).
@@ -15,12 +15,12 @@ import com.paceai.domain.training.Plan;
  */
 public class GeneratePlanService {
 
-    private final PlanRepository planRepository;
+    private final TrainingPlanRepository planRepository;
     private final AIGatewayPort aiGateway;
     private final EventPublisher eventPublisher;
 
     public GeneratePlanService(
-            PlanRepository planRepository,
+            TrainingPlanRepository planRepository,
             AIGatewayPort aiGateway,
             EventPublisher eventPublisher
     ) {
@@ -35,7 +35,7 @@ public class GeneratePlanService {
      * @param request the plan generation request
      * @return the generated plan
      */
-    public Plan execute(GeneratePlanRequest request) {
+    public TrainingPlan execute(GeneratePlanRequest request) {
         // TODO: Implement TDD - RED phase first
         // 1. Validate request
         // 2. Call AI Gateway to generate plan

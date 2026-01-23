@@ -15,15 +15,17 @@ public class AthleteJpaMapper {
         }
 
         AthleteEntity entity = new AthleteEntity();
-        entity.setId(athlete.getId());
-        entity.setStravaId(athlete.getStravaId());
-        entity.setStravaAccessToken(athlete.getStravaAccessToken());
-        entity.setStravaRefreshToken(athlete.getStravaRefreshToken());
-        entity.setEmail(athlete.getEmail() != null ? athlete.getEmail().getValue() : null);
+        entity.setId(athlete.id().value());
+        entity.setStravaId(athlete.stravaId());
+        entity.setStravaAccessToken(athlete.stravaAccessToken());
+        entity.setStravaRefreshToken(athlete.stravaRefreshToken());
+        entity.setEmail(athlete.email() != null ? athlete.email().getValue() : null);
 
-        if (athlete.getProfile() != null) {
-            entity.setVdotScore(athlete.getProfile().vdotScore() != null ? athlete.getProfile().vdotScore().doubleValue() : null);
-            entity.setMaxHeartRate(athlete.getProfile().maxHeartRate());
+        if (athlete.profile() != null) {
+            entity.setVdotScore(athlete.profile().vdotScore() != null ? athlete.profile().vdotScore().doubleValue() : null);
+            entity.setMaxHeartRate(athlete.profile().maxHeartRate());
+            entity.setRestingHeartRate(athlete.profile().restingHeartRate());
+            entity.setWeeklyMileage(athlete.profile().weeklyMileage());
         }
 
         return entity;
@@ -38,12 +40,12 @@ public class AthleteJpaMapper {
         Profile profile = new Profile(
                 entity.getVdotScore() != null ? java.math.BigDecimal.valueOf(entity.getVdotScore()) : null,
                 entity.getMaxHeartRate(),
-                null,
-                null
+                entity.getRestingHeartRate(),
+                entity.getWeeklyMileage()
         );
 
         return Athlete.builder()
-                .id(entity.getId())
+                .id(com.paceai.domain.athlete.AthleteId.of(entity.getId()))
                 .stravaId(entity.getStravaId())
                 .email(email)
                 .profile(profile)

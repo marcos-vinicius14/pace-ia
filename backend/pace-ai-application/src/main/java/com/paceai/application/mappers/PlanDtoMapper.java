@@ -2,8 +2,8 @@ package com.paceai.application.mappers;
 
 import com.paceai.application.dtos.PlanDto;
 import com.paceai.application.dtos.SessionDto;
-import com.paceai.domain.training.Plan;
-import com.paceai.domain.training.Session;
+import com.paceai.domain.training.plan.TrainingPlan;
+import com.paceai.domain.training.session.Session;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class PlanDtoMapper {
 
-    public PlanDto toDto(Plan plan) {
+    public PlanDto toDto(TrainingPlan plan) {
         // TODO: Implement domain to DTO conversion
         return null;
     }

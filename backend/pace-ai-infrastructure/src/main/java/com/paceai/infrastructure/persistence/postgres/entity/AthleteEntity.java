@@ -24,6 +24,12 @@ public class AthleteEntity {
     @Column(name = "max_heart_rate")
     private Integer maxHeartRate;
 
+    @Column(name = "resting_heart_rate")
+    private Integer restingHeartRate;
+
+    @Column(name = "weekly_mileage")
+    private Integer weeklyMileage;
+
     @Column(name = "email")
     private String email;
 
@@ -70,6 +76,22 @@ public class AthleteEntity {
 
     public void setMaxHeartRate(Integer maxHeartRate) {
         this.maxHeartRate = maxHeartRate;
+    }
+
+    public Integer getRestingHeartRate() {
+        return restingHeartRate;
+    }
+
+    public void setRestingHeartRate(Integer restingHeartRate) {
+        this.restingHeartRate = restingHeartRate;
+    }
+
+    public Integer getWeeklyMileage() {
+        return weeklyMileage;
+    }
+
+    public void setWeeklyMileage(Integer weeklyMileage) {
+        this.weeklyMileage = weeklyMileage;
     }
 
     public String getEmail() {

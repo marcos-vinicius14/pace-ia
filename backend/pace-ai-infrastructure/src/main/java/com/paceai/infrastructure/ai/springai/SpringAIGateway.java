@@ -1,7 +1,7 @@
 package com.paceai.infrastructure.ai.springai;
 
 import com.paceai.domain.ports.AIGatewayPort;
-import com.paceai.domain.training.Plan;
+import com.paceai.domain.training.plan.TrainingPlan;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,7 +17,7 @@ public class SpringAIGateway implements AIGatewayPort {
     // TODO: Inject ChatClient from Spring AI
 
     @Override
-    public Plan generatePlan(PlanGenerationRequest request) {
+    public TrainingPlan generatePlan(PlanGenerationRequest request) {
         // TODO: Implement AI plan generation
         // 1. Build prompt with athlete data and race goal
         // 2. Call AI model via ChatClient

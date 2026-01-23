@@ -1,7 +1,9 @@
 package com.paceai.infrastructure.persistence.postgres;
 
 import com.paceai.domain.ports.SessionRepository;
-import com.paceai.domain.training.Session;
+import com.paceai.domain.training.SessionId;
+import com.paceai.domain.training.TrainingPlanId;
+import com.paceai.domain.training.session.Session;
 import com.paceai.infrastructure.persistence.postgres.entity.SessionEntity;
 import com.paceai.infrastructure.persistence.postgres.mappers.SessionJpaMapper;
 import org.springframework.stereotype.Repository;
@@ -30,25 +32,25 @@ public class PostgresSessionRepository implements SessionRepository {
     }
 
     @Override
-    public Optional<Session> findById(UUID id) {
-        return jpaSessionRepository.findById(id)
+    public Optional<Session> findById(SessionId id) {
+        return jpaSessionRepository.findById(id.value())
                 .map(sessionJpaMapper::toDomainEntity);
     }
 
     @Override
-    public List<Session> findByPlanId(UUID planId) {
-        return jpaSessionRepository.findByPlanIdOrderByScheduledDateAsc(planId).stream()
+    public List<Session> findByPlanId(TrainingPlanId planId) {
+        return jpaSessionRepository.findByPlanIdOrderByScheduledDateAsc(planId.value()).stream()
                 .map(sessionJpaMapper::toDomainEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteById(UUID id) {
-        jpaSessionRepository.deleteById(id);
+    public void deleteById(SessionId id) {
+        jpaSessionRepository.deleteById(id.value());
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        return jpaSessionRepository.existsById(id);
+    public boolean existsById(SessionId id) {
+        return jpaSessionRepository.existsById(id.value());
     }
 }

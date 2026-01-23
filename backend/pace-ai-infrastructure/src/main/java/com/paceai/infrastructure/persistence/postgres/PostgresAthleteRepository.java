@@ -1,6 +1,7 @@
 package com.paceai.infrastructure.persistence.postgres;
 
 import com.paceai.domain.athlete.Athlete;
+import com.paceai.domain.athlete.AthleteId;
 import com.paceai.domain.ports.AthleteRepository;
 import com.paceai.infrastructure.persistence.postgres.entity.AthleteEntity;
 import com.paceai.infrastructure.persistence.postgres.mappers.AthleteJpaMapper;
@@ -28,8 +29,8 @@ public class PostgresAthleteRepository implements AthleteRepository {
     }
 
     @Override
-    public Optional<Athlete> findById(UUID id) {
-        return jpaAthleteRepository.findById(id)
+    public Optional<Athlete> findById(AthleteId id) {
+        return jpaAthleteRepository.findById(id.value())
                 .map(athleteJpaMapper::toDomainEntity);
     }
 
@@ -46,12 +47,12 @@ public class PostgresAthleteRepository implements AthleteRepository {
     }
 
     @Override
-    public void deleteById(UUID id) {
-        jpaAthleteRepository.deleteById(id);
+    public void deleteById(AthleteId id) {
+        jpaAthleteRepository.deleteById(id.value());
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        return jpaAthleteRepository.existsById(id);
+    public boolean existsById(AthleteId id) {
+        return jpaAthleteRepository.existsById(id.value());
     }
 }

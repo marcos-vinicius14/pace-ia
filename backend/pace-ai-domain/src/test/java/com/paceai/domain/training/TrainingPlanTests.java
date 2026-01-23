@@ -1,7 +1,7 @@
 package com.paceai.domain.training;
 
 import com.paceai.domain.athlete.AthleteId;
-import com.paceai.domain.exceptions.ExcessiveLoadDomainException;
+import com.paceai.domain.shared.Result;
 import com.paceai.domain.shared.Distance;
 import com.paceai.domain.training.plan.GoalDistance;
 import com.paceai.domain.training.plan.PlanStatus;
@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TrainingPlanTests {
 
@@ -56,14 +54,17 @@ class TrainingPlanTests {
 
         Distance newVolume = Distance.ofKilometers(22.0); // 10% increase
 
-        assertThatCode(() -> TrainingPlan.createWithValidation(
+        Result<TrainingPlan> result = TrainingPlan.createWithValidation(
                 athleteId,
                 newVolume,
                 LocalDate.now(),
                 GoalDistance.TEN_K,
                 LocalDate.now().plusWeeks(10),
                 previousPlan
-        )).doesNotThrowAnyException();
+        );
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getValue()).isNotNull();
     }
 
     @Test
@@ -81,15 +82,16 @@ class TrainingPlanTests {
 
         Distance newVolume = Distance.ofKilometers(24.0); // 20% increase
 
-        assertThatThrownBy(() -> TrainingPlan.createWithValidation(
+        Result<TrainingPlan> result = TrainingPlan.createWithValidation(
                 athleteId,
                 newVolume,
                 LocalDate.now(),
                 GoalDistance.TEN_K,
                 LocalDate.now().plusWeeks(10),
                 previousPlan
-        ))
-        .isInstanceOf(ExcessiveLoadDomainException.class)
-        .hasMessageContaining("15%");
+        );
+        
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getErrorMessage()).contains("15%");
     }
 }

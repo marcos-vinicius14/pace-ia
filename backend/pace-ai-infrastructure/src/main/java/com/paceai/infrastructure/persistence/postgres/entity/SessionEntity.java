@@ -1,6 +1,5 @@
 package com.paceai.infrastructure.persistence.postgres.entity;
 
-import com.paceai.infrastructure.persistence.postgres.PlanEntity;
 import jakarta.persistence.*;
 
 import java.util.UUID;
@@ -15,7 +14,7 @@ public class SessionEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id", nullable = false)
-    private PlanEntity plan;
+    private TrainingPlanEntity plan;
 
     @Column(name = "scheduled_date", nullable = false)
     private java.time.LocalDate scheduledDate;
@@ -44,11 +43,11 @@ public class SessionEntity {
         this.id = id;
     }
 
-    public PlanEntity getPlan() {
+    public TrainingPlanEntity getPlan() {
         return plan;
     }
 
-    public void setPlan(PlanEntity plan) {
+    public void setPlan(TrainingPlanEntity plan) {
         this.plan = plan;
     }
 

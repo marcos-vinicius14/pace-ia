@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import com.paceai.application.services.GeneratePlanService;
 import com.paceai.domain.ports.AIGatewayPort;
 import com.paceai.domain.ports.EventPublisher;
-import com.paceai.domain.ports.PlanRepository;
+import com.paceai.domain.ports.TrainingPlanRepository;
 
 /**
  * Application Beans Configuration.
@@ -19,7 +19,7 @@ public class ApplicationConfig {
 
     @Bean
     public GeneratePlanService generatePlanService(
-            PlanRepository planRepository,
+            TrainingPlanRepository planRepository,
             AIGatewayPort aiGateway,
             EventPublisher eventPublisher
     ) {

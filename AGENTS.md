@@ -4,184 +4,232 @@ This document provides essential information for agentic coding assistants worki
 
 ## Build, Lint, and Test Commands
 
-### Build Commands
+**Note:** All commands must be run from the `backend/` directory.
+
 ```bash
+cd backend
+
+# Build Commands
 ./mvnw clean compile          # Compile the project
 ./mvnw clean package          # Build JAR package
-./mvnw clean install         # Install to local Maven repo
-./mvnw spring-boot:run        # Run the application
-```
+./mvnw clean install          # Install to local Maven repo
+./mvnw spring-boot:run         # Run the application (from pace-ai-startup)
 
-### Test Commands
-```bash
-./mvnw test                          # Run all tests
-./mvnw test -Dtest=ClassName         # Run specific test class
+# Test Commands
+./mvnw test                   # Run all tests across all modules
+./mvnw test -pl pace-ai-domain # Run tests for specific module
+./mvnw test -Dtest=ClassName  # Run specific test class
 ./mvnw test -Dtest=ClassName#method  # Run specific test method
-./mvnw verify                        # Run all tests including integration tests
+./mvnw verify                 # Run all tests including integration tests
 ```
 
 ### Code Quality
-No explicit linting or formatting plugins configured. Follow Spring Boot conventions and Java best practices.
+- **ArchUnit** is configured for architecture validation (ensures Clean Layer compliance)
+- **Flyway** handles database migrations (`src/main/resources/db/migration`)
+- No explicit linting plugins - follow Spring Boot conventions and Java best practices
 
 ## Technology Stack
 
-- **Framework**: Spring Boot 4.0.1 (WebFlux, Security, Data JPA)
+- **Framework**: Spring Boot 3.4.1 (WebFlux, Security, Data JPA)
 - **Java Version**: 21
-- **Build Tool**: Maven (using Maven Wrapper)
-- **Database**: PostgreSQL (via Testcontainers in tests)
-- **Testing**: JUnit 5, Spring Boot Test, Testcontainers
-- **Architecture**: Reactive WebFlux + JPA for persistence
+- **Build Tool**: Maven (multi-module project with Maven Wrapper)
+- **Database**: PostgreSQL 15+ (via Testcontainers in tests, AWS RDS in prod)
+- **Cache**: Redis 7+ (AWS ElastiCache for session management)
+- **Messaging**: AWS SQS (Spring Cloud AWS)
+- **AI**: Spring AI (OpenAI/Anthropic integration)
+- **Testing**: JUnit 5, AssertJ, Testcontainers, ArchUnit
+- **Frontend**: Vue.js 3 (Composition API, Pinia, Tailwind CSS)
+- **Architecture**: Vertical Slice + Clean Architecture (Hexagonal), Reactive WebFlux
+
+## Module Structure
+
+```
+backend/
+├── pace-ai-domain/          # Domain layer (no infra dependencies)
+│   ├── shared/              # Value Objects (Distance, Pace, Zone, Email)
+│   ├── athlete/             # Aggregates (Athlete, Profile)
+│   ├── training/            # Entities (Plan, Session, Workout)
+│   ├── exceptions/          # Domain Exceptions
+│   └── ports/               # Interfaces (Repositories, Services)
+├── pace-ai-application/     # Use Cases/Orchestration
+├── pace-ai-infrastructure/  # Implementations (AWS, DB, AI, Messaging)
+├── pace-ai-web/             # REST Controllers, Security, Filters
+└── pace-ai-startup/         # Main application entry point
+```
 
 ## Development Principles
 
 ### TDD (Test Driven Development)
-All new features must follow the TDD workflow: **RED → GREEN → Refactor**.
-1. **RED:** Write a failing test first.
-2. **GREEN:** Write the minimum code to make the test pass.
-3. **REFACTOR:** Improve the code while keeping tests green.
+All new features must follow the **RED → GREEN → Refactor** workflow.
 
 ### Architecture & Design
-- **DDD + SOLID:** Follow Domain-Driven Design and SOLID principles.
-- **Composition over Inheritance:** Prefer composing objects over class inheritance.
-- **Immutability:** Favor immutable objects; use `final` fields and avoid setters where possible.
-- **Rich Domain Model:** Domain entities should contain behavior, not just data (avoid anemic domain models).
-- **Early Return:** Use early returns to reduce nesting and improve readability.
-- **State Machine for Enums:** Use state machine patterns for enums where it makes sense (e.g., `TrainingSessionStatus`).
+- **DDD + SOLID:** Domain-Driven Design and SOLID principles
+- **Clean Architecture:** Domain layer has ZERO infrastructure dependencies (no Spring, JPA, etc.)
+- **Composition over Inheritance:** Prefer composing objects over class inheritance
+- **Immutability:** Favor immutable objects; use `final` fields, avoid setters
+- **Rich Domain Model:** Domain entities contain behavior, not just data
+- **Early Return:** Use early returns to reduce nesting
 
 ### Design Patterns
-- **Static Factory Methods vs Builder Pattern:**
-  - Use **Static Factory Methods** for simple object creation with few parameters (≤ 4 mandatory fields)
-  - Use **Static Factory Methods** when you can provide descriptive names (e.g., `createForNewAthlete()`)
-  - Use **Builder Pattern** only when you have many mandatory fields (≥ 5) or a mix of required/optional parameters
-  - Example: `TrainingPlan.create(id, athleteId, volume, date)` instead of `TrainingPlan.builder().id(id).build()`
 
-- **Utility Classes:**
-  - Enforce noninstantiability for utility classes containing only static members
-  - Make class `final`, add a private constructor that throws `AssertionError`
-  - Example:
-    ```java
-    public final class Identifiers {
-        private Identifiers() {
-            throw new AssertionError("Identifiers is a utility class and cannot be instantiated");
-        }
-        public static UUID newId() { /* ... */ }
-    }
-    ```
+**Static Factory Methods:**
+- Use for simple object creation with ≤ 4 mandatory fields
+- Use descriptive names: `Distance.ofKilometers()`, `TrainingPlan.create()`, `AthleteId.create()`
+- Example: `Distance.ofKilometers(10.5)` instead of `new Distance(10.5, Unit.KM)`
+
+**Builder Pattern:**
+- Use when ≥ 5 mandatory fields or mix of required/optional parameters
+- Example: `Athlete.builder().id(id).email(email).stravaId(12345L).build()`
+
+**State Machine for Enums:**
+- Implement state machine patterns for enums (e.g., `PlanStatus`)
+- Use `canTransitionTo()` and `transitionTo()` methods
+
+**Utility Classes:**
+- Make class `final` with private constructor throwing `AssertionError`
+- Example: `Identifiers` class for UUID generation
 
 ### UUID Strategy
-- **UUID Version 7 (Time-Ordered):**
-  - All entity IDs must use **UUID v7** for time-ordered, database-friendly identifiers
-  - Use `Identifiers.newId()` utility class from `com.paceai.domain.shared`
-  - Never use `UUID.randomUUID()` (v4) as it causes index fragmentation in databases
-  - UUID v7 provides natural sorting by creation time and better database index performance
-  - Dependency: `uuid-creator` library provides `UuidCreator.getTimeOrderedEpoch()`
-
-### Documentation
-- **Always consult the `docs/` folder** before implementing new features. It contains the PRD, requirements, and architectural decisions.
+- **MUST use UUID v7** for time-ordered, database-friendly identifiers
+- Use `Identifiers.newId()` from `com.paceai.domain.shared`
+- Never use `UUID.randomUUID()` (v4) - causes index fragmentation
+- Library: `uuid-creator` (`UuidCreator.getTimeOrderedEpoch()`)
 
 ## Code Style Guidelines
 
 ### Package Structure
-- Package name follows reverse domain: `org.paceia`
-- Subpackages follow feature/domain organization
+- Package name: `com.paceai`
 - Test classes mirror main package structure
+- Each module is a separate Maven artifact
 
 ### Naming Conventions
-- **Classes**: PascalCase (e.g., `Application`, `TestcontainersConfiguration`)
-- **Methods**: camelCase (e.g., `contextLoads`, `postgresContainer`)
-- **Variables**: camelCase
-- **Constants**: UPPER_SNAKE_CASE
-- **Test Classes**: Append `Tests` suffix (e.g., `ApplicationTests`)
+- **Classes:** PascalCase (e.g., `TrainingPlan`, `PaceAiApplication`)
+- **Methods:** camelCase (e.g., `shouldCreateAthlete`, `getValueInKilometers`)
+- **Variables:** camelCase
+- **Constants:** UPPER_SNAKE_CASE
+- **Test Classes:** Append `Tests` suffix (e.g., `AthleteTests`)
+- **Value Objects:** Singular nouns ending with concept (e.g., `Distance`, `Email`)
 
 ### Imports
-- Organize imports alphabetically
-- Separate standard library, third-party, and internal imports with blank lines
-- Use wildcard imports sparingly (prefer explicit imports)
-- Spring Boot annotations typically imported before other classes
+- Organize alphabetically
+- Standard library, third-party, internal imports separated by blank lines
+- Prefer explicit imports over wildcards
+- Spring Boot annotations imported before other classes
 
 ### Class Structure
 ```java
-package org.paceia;
+package com.paceai.domain.shared;
 
 // Imports (alphabetically ordered)
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.github.f4b6a3.uuid.UuidCreator;
+import java.util.UUID;
 
-// Annotations (each on separate line if multiple)
-@SpringBootApplication
-public class Application {
+/**
+ * Class description following JavaDoc conventions.
+ */
+public final class Distance {
 
-    // Static fields first
-    // Instance fields
-    // Constructors
+    // Static fields
+    // Instance fields (final for immutability)
+    // Private constructor
+    // Static factory methods
     // Public methods
-    // Protected methods
     // Private methods
+    // equals(), hashCode(), toString()
 }
 ```
 
 ### Method Visibility
-- Default (package-private) for Spring configuration classes (e.g., `TestcontainersConfiguration`)
-- Public for main entry points and service methods
+- Package-private (default) for test-specific beans/configurations
+- Public for service methods, factory methods, getters
 - Private for internal helper methods
 - Test methods omit visibility modifier (JUnit 5 default)
 
 ### Spring Framework Conventions
-- Use `@SpringBootApplication` on main application class
-- Use `@TestConfiguration` for test-specific beans
-- Use `@Bean` for bean definitions
-- Use `@ServiceConnection` for Testcontainers integration
-- Reactive controllers use `@RestController` with reactive types
+- `@SpringBootApplication` on main entry point (`PaceAiApplication`)
+- `@TestConfiguration` for test-specific beans
+- `@Bean` for bean definitions in configuration classes
+- `@RestController` with reactive types (`Mono<T>`, `Flux<T>`)
+- `@ServiceConnection` for Testcontainers integration
+- Use `subscribe()` only at edge layers (controllers, scheduled tasks)
 
 ### Error Handling
-- Use Spring's reactive error handling: `Mono.error()` or `Flux.error()`
+- **Result Pattern:** Use Result type for expected failures (validation errors, not found, business rule violations)
+- **Exceptions:** Use only for truly exceptional cases (system failures, unexpected errors)
+- Domain exceptions extend `DomainException` (abstract base class)
+- Custom exceptions: `EntityNotFoundException`, `BusinessRuleViolationException`
+- Reactive error handling: `Mono.error()` or `Flux.error()`
 - Implement global exception handlers via `@ControllerAdvice`
-- Validate inputs with `@Valid` and Jakarta Bean Validation annotations
+
+### Functional Design Principles
+- Favor pure functions without side effects where possible
+- Use immutable data structures and final fields
+- Prefer method chaining and fluent APIs
+- Use Optional and Result types instead of null
+- Leverage Java 21 functional features (records, pattern matching, switch expressions)
+- Avoid mutable state in domain objects
+
+### 9 Rules of Object Calisthenics
+1. **Only 1 level of indentation per method** - Extract methods to reduce nesting
+2. **Don't use ELSE** - Use early returns, guard clauses, or polymorphism
+3. **Wrap all primitives and strings** - Use Value Objects (e.g., `Distance`, `Email`, `Pace`)
+4. **First class collections** - Encapsulate collection behaviors in dedicated types (e.g., `Sessions`)
+5. **One dot per line** - Avoid chaining calls; use temporary variables or tell-don't-ask
+6. **Don't abbreviate** - Use descriptive names throughout
+7. **Keep all entities small** - Classes with ≤ 50 lines
+8. **No classes with more than 2 instance variables** - Extract smaller classes/compose objects
+9. **No getters/setters** - Expose behavior, not data (tell-don't-ask principle)
 
 ### Testing Patterns
-- Test classes annotated with `@SpringBootTest`
-- Use `@Import` to include test configurations
-- Test methods annotated with `@Test`
-- Test method names should be descriptive camelCase
-- Leverage Testcontainers for database-dependent tests
-- Use `TestcontainersConfiguration` class for container setup
+- Test classes annotated with `@SpringBootTest` (for integration tests)
+- Use `@Import` for test-specific configurations
+- Use `@Test` annotation on test methods (JUnit 5)
+- Use AssertJ: `assertThat(actual).isEqualTo(expected)`
+- Test method names: `shouldXxxWhenYyy()` or `shouldXxx()`
+- Use Testcontainers for database-dependent tests
+- Domain tests use plain JUnit (no Spring context)
 
 ### Configuration
-- Properties stored in `src/main/resources/application.properties`
-- Use Spring Boot's configuration properties for typed access
-- Sensitive configuration should use environment variables
+- Properties in `backend/pace-ai-startup/src/main/resources/application.properties`
+- Environment variables for sensitive config (DB, Redis, API keys)
+- Flyway migrations in `src/main/resources/db/migration`
 
 ### Reactivity Guidelines
 - Return `Mono<T>` for single-value operations
 - Return `Flux<T>` for multi-value operations
-- Use `subscribe()` only at the edge layers (controllers, scheduled tasks)
 - Avoid blocking calls in reactive pipelines
+- Use SSE (Server-Sent Events) for real-time updates
 
 ### Database Access
-- Use Spring Data JPA repositories for entity persistence
+- Spring Data JPA repositories for persistence
+- Entity classes use JPA annotations (`@Entity`, `@Id`, etc.)
 - Transaction management via `@Transactional`
-- Entity classes use JPA annotations (e.g., `@Entity`, `@Id`)
-- Use Testcontainers for integration testing with PostgreSQL
+- JPA entities in `pace-ai-infrastructure` (separate from domain entities)
+- Mapper classes convert between domain and JPA entities
 
 ## Development Workflow
 
-1. Create feature branch from main
-2. Implement changes following code style guidelines
-3. Run tests with `./mvnw test`
-4. Build package with `./mvnw clean package`
-5. Commit changes with clear, descriptive messages
-6. Ensure all tests pass before pushing
+1. Create feature branch from `main`
+2. Write failing test first (TDD - RED)
+3. Implement minimum code to pass test (GREEN)
+4. Refactor while keeping tests green
+5. Run `./mvnw test` from `backend/` directory
+6. Build with `./mvnw clean package`
+7. Commit with clear, descriptive messages
+8. Ensure all tests pass before pushing
 
 ## Key Files
 
-- `src/main/java/org/paceia/Application.java` - Main application entry point
-- `src/test/java/org/paceia/TestcontainersConfiguration.java` - Testcontainers setup
-- `pom.xml` - Maven project configuration
-- `src/main/resources/application.properties` - Application configuration
+- `backend/pace-ai-startup/src/main/java/com/paceai/PaceAiApplication.java` - Main entry point
+- `backend/pom.xml` - Parent Maven configuration
+- `backend/pace-ai-domain/src/main/java/com/paceai/domain/shared/Identifiers.java` - UUID v7 generator
+- `backend/pace-ai-startup/src/main/resources/application.properties` - Application config
 
 ## Notes
 
+- Always consult `docs/prd.md` before implementing new features
 - The project uses Spring Boot Dev Services for Testcontainers at development time
-- PostgreSQL container uses `postgres:latest` image - pin to specific version for production
-- Maven Wrapper (`./mvnw`) is committed for consistent builds across environments
-- Java 21 features are available and encouraged when appropriate
+- Multi-module Maven requires commands to be run from `backend/` directory
+- Java 21 features (records, pattern matching, switch expressions) encouraged
+- Code comments should follow JavaDoc conventions for public APIs
+- Portuguese error messages are acceptable (e.g., `Distance.java`)

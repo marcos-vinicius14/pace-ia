@@ -1,10 +1,14 @@
 package com.paceai.infrastructure.persistence.postgres.mappers;
 
-import com.paceai.domain.training.Session;
-import com.paceai.domain.training.SessionStatus;
-import com.paceai.domain.training.SessionType;
+import com.paceai.domain.training.SessionId;
+import com.paceai.domain.training.TrainingPlanId;
+import com.paceai.domain.training.session.Session;
+import com.paceai.domain.training.session.SessionStatus;
+import com.paceai.domain.training.session.SessionType;
 import com.paceai.infrastructure.persistence.postgres.entity.SessionEntity;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 public class SessionJpaMapper {
@@ -15,13 +19,12 @@ public class SessionJpaMapper {
         }
 
         SessionEntity entity = new SessionEntity();
-        entity.setId(session.getId());
-        // Plan is set by the parent PlanEntity or Repository
-        entity.setScheduledDate(session.getScheduledDate());
-        entity.setType(mapSessionType(session.getType()));
-        entity.setStatus(mapSessionStatus(session.getStatus()));
-        entity.setDetailsJsonb(session.getDetails());
-        entity.setStravaActivityId(session.getStravaActivityId());
+        entity.setId(session.id().value());
+        entity.setScheduledDate(session.scheduledDate());
+        entity.setType(mapSessionType(session.type()));
+        entity.setStatus(mapSessionStatus(session.status()));
+        entity.setDetailsJsonb(session.details());
+        entity.setStravaActivityId(session.stravaActivityId());
 
         return entity;
     }
@@ -32,8 +35,8 @@ public class SessionJpaMapper {
         }
 
         return Session.builder()
-                .id(entity.getId())
-                .planId(entity.getPlan() != null ? entity.getPlan().getId() : null)
+                .id(SessionId.of(entity.getId()))
+                .planId(entity.getPlan() != null ? TrainingPlanId.of(entity.getPlan().getId()) : null)
                 .scheduledDate(entity.getScheduledDate())
                 .type(mapSessionTypeJpa(entity.getType()))
                 .status(mapSessionStatusJpa(entity.getStatus()))
@@ -46,11 +49,11 @@ public class SessionJpaMapper {
         if (entity == null || session == null) {
             return;
         }
-        entity.setScheduledDate(session.getScheduledDate());
-        entity.setType(mapSessionType(session.getType()));
-        entity.setStatus(mapSessionStatus(session.getStatus()));
-        entity.setDetailsJsonb(session.getDetails());
-        entity.setStravaActivityId(session.getStravaActivityId());
+        entity.setScheduledDate(session.scheduledDate());
+        entity.setType(mapSessionType(session.type()));
+        entity.setStatus(mapSessionStatus(session.status()));
+        entity.setDetailsJsonb(session.details());
+        entity.setStravaActivityId(session.stravaActivityId());
     }
 
     public SessionEntity.SessionTypeJpa mapSessionType(SessionType type) {

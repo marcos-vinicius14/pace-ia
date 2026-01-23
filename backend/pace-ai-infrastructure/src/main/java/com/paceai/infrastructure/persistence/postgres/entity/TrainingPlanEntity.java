@@ -1,34 +1,15 @@
-package com.paceai.infrastructure.persistence.postgres;
+package com.paceai.infrastructure.persistence.postgres.entity;
+
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.paceai.infrastructure.persistence.postgres.entity.SessionEntity;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
-/**
- * JPA Entity for Training Plan.
- * <p>
- * This is an Infrastructure concern - a JPA-annotated entity that maps
- * to the database table. It is separate from the Domain Entity.
- * </p>
- */
 @Entity
 @Table(name = "training_plans")
-public class PlanEntity {
+public class TrainingPlanEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -41,7 +22,7 @@ public class PlanEntity {
     @Column(name = "goal_distance", nullable = false)
     private GoalDistanceJpa goalDistance;
 
-    @Column(name = "race_date")
+    @Column(name = "race_date", nullable = false)
     private LocalDate raceDate;
 
     @Enumerated(EnumType.STRING)
@@ -51,12 +32,17 @@ public class PlanEntity {
     @Column(name = "ai_model_version")
     private String aiModelVersion;
 
+    @Column(name = "weekly_volume_km", nullable = false, precision = 10, scale = 2)
+    private Double weeklyVolumeKm;
+
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate;
+
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<SessionEntity> sessions = new ArrayList<>();
 
-    public PlanEntity() {}
+    public TrainingPlanEntity() {}
 
-    // Getters and Setters
     public UUID getId() {
         return id;
     }
@@ -105,6 +91,22 @@ public class PlanEntity {
         this.aiModelVersion = aiModelVersion;
     }
 
+    public Double getWeeklyVolumeKm() {
+        return weeklyVolumeKm;
+    }
+
+    public void setWeeklyVolumeKm(Double weeklyVolumeKm) {
+        this.weeklyVolumeKm = weeklyVolumeKm;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
     public List<SessionEntity> getSessions() {
         return sessions;
     }
@@ -113,7 +115,6 @@ public class PlanEntity {
         this.sessions = sessions;
     }
 
-    // JPA Enums (Infrastructure-specific)
     public enum GoalDistanceJpa {
         FIVE_K, TEN_K, HALF_MARATHON, MARATHON
     }
