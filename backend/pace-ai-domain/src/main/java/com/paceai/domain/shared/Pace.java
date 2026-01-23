@@ -14,18 +14,37 @@ public final class Pace {
     private final Duration timePerKilometer;
 
     private Pace(Duration timePerKilometer) {
-        if (timePerKilometer.isNegative() || timePerKilometer.isZero()) {
-            throw new IllegalArgumentException("Pace must be positive");
-        }
         this.timePerKilometer = timePerKilometer;
     }
 
-    public static Pace ofMinutesPerKilometer(int minutes, int seconds) {
-        return new Pace(Duration.ofMinutes(minutes).plusSeconds(seconds));
+    public static Result<Pace> create(int minutes, int seconds) {
+        if (minutes < 0 || seconds < 0 || (minutes == 0 && seconds == 0)) {
+            return Result.failure("Pace must be positive");
+        }
+        return Result.success(new Pace(Duration.ofMinutes(minutes).plusSeconds(seconds)));
     }
 
+    public static Result<Pace> create(long totalSeconds) {
+        if (totalSeconds <= 0) {
+            return Result.failure("Pace must be positive");
+        }
+        return Result.success(new Pace(Duration.ofSeconds(totalSeconds)));
+    }
+
+    /**
+     * @deprecated Use create() instead.
+     */
+    @Deprecated
+    public static Pace ofMinutesPerKilometer(int minutes, int seconds) {
+        return create(minutes, seconds).orElseThrow(IllegalArgumentException::new);
+    }
+
+    /**
+     * @deprecated Use create() instead.
+     */
+    @Deprecated
     public static Pace ofSecondsPerKilometer(long seconds) {
-        return new Pace(Duration.ofSeconds(seconds));
+        return create(seconds).orElseThrow(IllegalArgumentException::new);
     }
 
     public Duration getTimePerKilometer() {

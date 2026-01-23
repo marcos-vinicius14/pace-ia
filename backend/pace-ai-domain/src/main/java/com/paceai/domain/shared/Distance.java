@@ -14,23 +14,53 @@ public final class Distance {
     private final DistanceUnit unit;
 
     private Distance(double value, DistanceUnit unit) {
-        if (value < 0) {
-            throw new IllegalArgumentException("A distância não pode ser negativa");
-        }
         this.value = value;
-        this.unit = Objects.requireNonNull(unit, "A unidade não pode estar vazia.");
+        this.unit = unit;
     }
 
+    public static Result<Distance> createKilometers(double km) {
+        if (km < 0) {
+            return Result.failure("A distância não pode ser negativa");
+        }
+        return Result.success(new Distance(km, DistanceUnit.KILOMETERS));
+    }
+
+    public static Result<Distance> createMiles(double miles) {
+        if (miles < 0) {
+            return Result.failure("A distância não pode ser negativa");
+        }
+        return Result.success(new Distance(miles, DistanceUnit.MILES));
+    }
+
+    public static Result<Distance> createMeters(double meters) {
+        if (meters < 0) {
+            return Result.failure("A distância não pode ser negativa");
+        }
+        return Result.success(new Distance(meters / 1000.0, DistanceUnit.KILOMETERS));
+    }
+
+    /**
+     * @deprecated Use createKilometers() instead.
+     */
+    @Deprecated
     public static Distance ofKilometers(double km) {
-        return new Distance(km, DistanceUnit.KILOMETERS);
+        return createKilometers(km).orElseThrow(IllegalArgumentException::new);
     }
 
+    /**
+     * @deprecated Use createMiles() instead.
+     */
+    @Deprecated
     public static Distance ofMiles(double miles) {
-        return new Distance(miles, DistanceUnit.MILES);
+        return createMiles(miles).orElseThrow(IllegalArgumentException::new);
     }
 
+    /**
+     * @deprecated Use createMeters() instead.
+     */
+    @Deprecated
     public static Distance ofMeters(double meters) {
-        return new Distance(meters / 1000.0, DistanceUnit.KILOMETERS);
+        return createMeters(meters).orElseThrow(IllegalArgumentException::new);
     }
 
     public double getValueInKilometers() {

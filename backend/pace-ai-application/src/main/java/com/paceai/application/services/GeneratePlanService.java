@@ -3,6 +3,7 @@ package com.paceai.application.services;
 import com.paceai.domain.ports.AIGatewayPort;
 import com.paceai.domain.ports.EventPublisher;
 import com.paceai.domain.ports.TrainingPlanRepository;
+import com.paceai.domain.shared.Result;
 import com.paceai.domain.training.plan.TrainingPlan;
 
 /**
@@ -33,9 +34,9 @@ public class GeneratePlanService {
      * Generates a new training plan for an athlete.
      *
      * @param request the plan generation request
-     * @return the generated plan
+     * @return the generated plan result
      */
-    public TrainingPlan execute(GeneratePlanRequest request) {
+    public Result<TrainingPlan> execute(GeneratePlanRequest request) {
         // TODO: Implement TDD - RED phase first
         // 1. Validate request
         // 2. Call AI Gateway to generate plan
@@ -43,7 +44,7 @@ public class GeneratePlanService {
         // 4. Save plan to repository
         // 5. Publish domain event
         // 6. Return saved plan
-        return null;
+        return Result.failure("Not implemented");
     }
 
     /**
