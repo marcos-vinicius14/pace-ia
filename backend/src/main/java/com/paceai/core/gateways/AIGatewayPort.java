@@ -1,0 +1,32 @@
+package com.paceai.core.gateways;
+
+import com.paceai.core.domain.training.plan.TrainingPlan;
+
+/**
+ * AI Gateway Port (Interface).
+ * <p>
+ * This is a Port that defines the contract for interacting with AI services
+ * (OpenAI, Anthropic) to generate training plans.
+ * </p>
+ */
+public interface AIGatewayPort {
+
+    /**
+     * Generates a training plan using AI.
+     *
+     * @param request the plan generation request
+     * @return the generated plan
+     */
+    TrainingPlan generatePlan(PlanGenerationRequest request);
+
+    /**
+     * Request object for plan generation.
+     */
+    record PlanGenerationRequest(
+            String goalDistance,
+            String raceDate,
+            int currentLevel,
+            int availableDaysPerWeek,
+            String athleteProfile
+    ) {}
+}

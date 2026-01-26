@@ -156,10 +156,7 @@ public final class Distance {
 ### Error Handling
 - **Result Pattern:** Use Result type for expected failures (validation errors, not found, business rule violations)
 - **Exceptions:** Use only for truly exceptional cases (system failures, unexpected errors)
-- Domain exceptions extend `DomainException` (abstract base class)
-- Custom exceptions: `EntityNotFoundException`, `BusinessRuleViolationException`
-- Reactive error handling: `Mono.error()` or `Flux.error()`
-- Implement global exception handlers via `@ControllerAdvice`
+
 
 ### Functional Design Principles
 - Favor pure functions without side effects where possible
