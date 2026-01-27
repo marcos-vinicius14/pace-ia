@@ -1,24 +1,26 @@
 package com.paceai.infra.persistence.postgres.adapters;
 
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import jakarta.persistence.EntityManager;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.paceai.core.domain.athlete.AthleteId;
-import com.paceai.core.domain.exceptions.EntityNotFoundException;
-import com.paceai.core.gateways.TrainingPlanRepository;
+import com.paceai.core.domain.shared.Result;
 import com.paceai.core.domain.training.TrainingPlanId;
 import com.paceai.core.domain.training.plan.TrainingPlan;
 import com.paceai.core.domain.training.session.Session;
 import com.paceai.core.domain.training.session.Sessions;
+import com.paceai.core.gateways.TrainingPlanRepository;
 import com.paceai.infra.persistence.postgres.entity.SessionEntity;
 import com.paceai.infra.persistence.postgres.entity.TrainingPlanEntity;
 import com.paceai.infra.persistence.postgres.mappers.SessionJpaMapper;
 import com.paceai.infra.persistence.postgres.mappers.TrainingPlanJpaMapper;
 import com.paceai.infra.persistence.postgres.repositories.JpaTrainingPlanRepository;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Repository
 public class PostgresTrainingPlanRepository implements TrainingPlanRepository {
@@ -26,34 +28,38 @@ public class PostgresTrainingPlanRepository implements TrainingPlanRepository {
     private final JpaTrainingPlanRepository jpaTrainingPlanRepository;
     private final TrainingPlanJpaMapper trainingPlanJpaMapper;
     private final SessionJpaMapper sessionJpaMapper;
+    private final EntityManager entityManager;
 
     public PostgresTrainingPlanRepository(
             JpaTrainingPlanRepository jpaTrainingPlanRepository,
             TrainingPlanJpaMapper trainingPlanJpaMapper,
-            SessionJpaMapper sessionJpaMapper
+            SessionJpaMapper sessionJpaMapper,
+            EntityManager entityManager
     ) {
         this.jpaTrainingPlanRepository = jpaTrainingPlanRepository;
         this.trainingPlanJpaMapper = trainingPlanJpaMapper;
         this.sessionJpaMapper = sessionJpaMapper;
+        this.entityManager = entityManager;
     }
 
     @Override
     @Transactional
-    public TrainingPlan save(TrainingPlan plan) {
+    public Result<TrainingPlan> save(TrainingPlan plan) {
         TrainingPlanEntity planEntity = trainingPlanJpaMapper.toJpaEntity(plan);
-        return isNew(planEntity) 
-            ? saveNewPlan(planEntity, plan.sessions()) 
+        return isNew(planEntity)
+            ? Result.success(saveNewPlan(planEntity, plan.sessions()))
             : updateExistingPlan(planEntity, plan.sessions());
     }
 
     private boolean isNew(TrainingPlanEntity entity) {
-        return entity.getId() == null;
+        return entity.getId() == null || !jpaTrainingPlanRepository.existsById(entity.getId());
     }
 
     private TrainingPlan saveNewPlan(TrainingPlanEntity planEntity, Sessions newSessions) {
-        TrainingPlanEntity savedPlan = jpaTrainingPlanRepository.save(planEntity);
-        addSessionsToPlan(savedPlan, newSessions);
-        return trainingPlanJpaMapper.toDomainEntity(savedPlan, convertSessionsToDomain(savedPlan.getSessions()));
+        addSessionsToPlan(planEntity, newSessions);
+        entityManager.persist(planEntity);
+        entityManager.flush();
+        return trainingPlanJpaMapper.toDomainEntity(planEntity, convertSessionsToDomain(planEntity.getSessions()));
     }
 
     private void addSessionsToPlan(TrainingPlanEntity planEntity, Sessions sessions) {
@@ -66,14 +72,19 @@ public class PostgresTrainingPlanRepository implements TrainingPlanRepository {
         });
     }
 
-    private TrainingPlan updateExistingPlan(TrainingPlanEntity planEntity, Sessions newSessions) {
-        TrainingPlanEntity existingPlan = jpaTrainingPlanRepository.findById(planEntity.getId())
-                .orElseThrow(() -> new EntityNotFoundException("TrainingPlan", planEntity.getId().toString()));
+    private Result<TrainingPlan> updateExistingPlan(TrainingPlanEntity planEntity, Sessions newSessions) {
+        Optional<TrainingPlanEntity> existingPlan = jpaTrainingPlanRepository.findById(planEntity.getId());
+        if (existingPlan.isEmpty()) {
+            return Result.failure("TrainingPlan não encontrado para atualização: " + planEntity.getId());
+        }
 
-        updatePlanFields(existingPlan, planEntity);
-        reconcileSessions(existingPlan, newSessions);
+        TrainingPlanEntity planToUpdate = existingPlan.get();
+        updatePlanFields(planToUpdate, planEntity);
+        reconcileSessions(planToUpdate, newSessions);
 
-        return trainingPlanJpaMapper.toDomainEntity(existingPlan, convertSessionsToDomain(existingPlan.getSessions()));
+        return Result.success(
+                trainingPlanJpaMapper.toDomainEntity(planToUpdate, convertSessionsToDomain(planToUpdate.getSessions()))
+        );
     }
 
     private void updatePlanFields(TrainingPlanEntity target, TrainingPlanEntity source) {

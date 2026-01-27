@@ -40,7 +40,7 @@ public class PostgresSessionRepository implements SessionRepository {
 
     @Override
     public List<Session> findByPlanId(TrainingPlanId planId) {
-        return jpaSessionRepository.findByPlanIdOrderByScheduledDateAsc(planId.value()).stream()
+        return jpaSessionRepository.findByPlan_IdOrderByScheduledDateAsc(planId.value()).stream()
                 .map(sessionJpaMapper::toDomainEntity)
                 .collect(Collectors.toList());
     }

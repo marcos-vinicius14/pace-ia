@@ -2,6 +2,7 @@ package com.paceai.infra.persistence.postgres.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -9,7 +10,6 @@ import java.util.UUID;
 public class AthleteEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "strava_id", unique = true, nullable = false)
@@ -19,7 +19,7 @@ public class AthleteEntity {
     private String stravaAccessToken;
 
     @Column(name = "vdot_score", precision = 5, scale = 2)
-    private Double vdotScore;
+    private BigDecimal vdotScore;
 
     @Column(name = "max_heart_rate")
     private Integer maxHeartRate;
@@ -62,11 +62,11 @@ public class AthleteEntity {
         this.stravaAccessToken = stravaAccessToken;
     }
 
-    public Double getVdotScore() {
+    public BigDecimal getVdotScore() {
         return vdotScore;
     }
 
-    public void setVdotScore(Double vdotScore) {
+    public void setVdotScore(BigDecimal vdotScore) {
         this.vdotScore = vdotScore;
     }
 

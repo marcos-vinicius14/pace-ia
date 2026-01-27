@@ -1,5 +1,7 @@
 package com.paceai.infra.persistence.postgres.mappers;
 
+import org.springframework.stereotype.Component;
+
 import com.paceai.core.domain.athlete.AthleteId;
 import com.paceai.core.domain.shared.Distance;
 import com.paceai.core.domain.training.TrainingPlanId;
@@ -8,7 +10,8 @@ import com.paceai.core.domain.training.plan.PlanStatus;
 import com.paceai.core.domain.training.plan.TrainingPlan;
 import com.paceai.core.domain.training.session.Sessions;
 import com.paceai.infra.persistence.postgres.entity.TrainingPlanEntity;
-import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 
 @Component
 public class TrainingPlanJpaMapper {
@@ -25,7 +28,7 @@ public class TrainingPlanJpaMapper {
         entity.setRaceDate(plan.raceDate());
         entity.setStatus(mapPlanStatus(plan.status()));
         entity.setAiModelVersion(plan.aiModelVersion());
-        entity.setWeeklyVolumeKm(plan.weeklyVolume().getValueInKilometers());
+        entity.setWeeklyVolumeKm(BigDecimal.valueOf(plan.weeklyVolume().getValueInKilometers()));
         entity.setStartDate(plan.startDate());
 
         return entity;
@@ -39,7 +42,7 @@ public class TrainingPlanJpaMapper {
         return TrainingPlan.reconstitute(
                 TrainingPlanId.of(entity.getId()),
                 AthleteId.of(entity.getAthleteId()),
-                Distance.ofKilometers(entity.getWeeklyVolumeKm()),
+                Distance.ofKilometers(entity.getWeeklyVolumeKm().doubleValue()),
                 entity.getStartDate(),
                 mapGoalDistanceJpa(entity.getGoalDistance()),
                 entity.getRaceDate(),

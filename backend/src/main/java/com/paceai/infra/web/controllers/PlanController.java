@@ -1,10 +1,16 @@
 package com.paceai.infra.web.controllers;
 
-import com.paceai.core.usecases.services.GeneratePlanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import com.paceai.core.domain.shared.Result;
+import com.paceai.core.usecases.dtos.CreatePlanRequest;
+import com.paceai.core.usecases.dtos.PlanDto;
+import com.paceai.core.usecases.dtos.PlanResponse;
+import com.paceai.core.usecases.services.GeneratePlanUseCase;
+import com.paceai.core.usecases.services.GetPlanUseCase;
 
 /**
  * REST Controller for Training Plan operations.
@@ -17,36 +23,42 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/plans")
 public class PlanController {
 
-    private final GeneratePlanService generatePlanService;
+    private final GeneratePlanUseCase generatePlanUseCase;
+    private final GetPlanUseCase getPlanUseCase;
 
-    public PlanController(GeneratePlanService generatePlanService) {
-        this.generatePlanService = generatePlanService;
+    public PlanController(
+            GeneratePlanUseCase generatePlanUseCase,
+            GetPlanUseCase getPlanUseCase
+    ) {
+        this.generatePlanUseCase = generatePlanUseCase;
+        this.getPlanUseCase = getPlanUseCase;
     }
 
     /**
      * Generates a new training plan.
-     * Returns 202 Accepted with a plan ID (async processing via SQS).
+     * Returns 201 Created with the created plan details.
      */
     @PostMapping
-    public Mono<ResponseEntity<GeneratePlanResponse>> generatePlan(
-            @RequestBody GeneratePlanRequest request
+    public Mono<ResponseEntity<PlanResponse>> generatePlan(
+            @RequestBody CreatePlanRequest request
     ) {
-        // TODO: Implement reactive endpoint
-        // 1. Validate request
-        // 2. Send message to SQS queue
-        // 3. Return 202 Accepted with plan ID
-        return Mono.just(ResponseEntity.status(HttpStatus.ACCEPTED).body(
-                new GeneratePlanResponse("plan-id-placeholder", "PROCESSING")
-        ));
+        Result<PlanResponse> result = generatePlanUseCase.execute(request);
+        if (result.isFailure()) {
+            return Mono.just(ResponseEntity.<PlanResponse>badRequest().build()); // Could add error message body
+        }
+        return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(result.getValue()));
     }
 
     /**
      * Retrieves a plan by ID.
      */
     @GetMapping("/{planId}")
-    public Mono<ResponseEntity<Object>> getPlan(@PathVariable String planId) {
-        // TODO: Implement get plan endpoint
-        return Mono.just(ResponseEntity.ok().build());
+    public Mono<ResponseEntity<PlanDto>> getPlan(@PathVariable String planId) {
+        Result<PlanDto> result = getPlanUseCase.execute(planId);
+        if (result.isFailure()) {
+            return Mono.just(ResponseEntity.notFound().build());
+        }
+        return Mono.just(ResponseEntity.ok(result.getValue()));
     }
 
     /**
@@ -58,16 +70,5 @@ public class PlanController {
         return Mono.just(ResponseEntity.ok().build());
     }
 
-    // Request/Response DTOs
-    public record GeneratePlanRequest(
-            String goalDistance,
-            String raceDate,
-            int currentLevel,
-            int availableDaysPerWeek
-    ) {}
-
-    public record GeneratePlanResponse(
-            String planId,
-            String status
-    ) {}
+    // TODO: Implement get/list endpoints
 }

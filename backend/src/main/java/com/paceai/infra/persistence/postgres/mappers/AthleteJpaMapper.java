@@ -1,10 +1,11 @@
 package com.paceai.infra.persistence.postgres.mappers;
 
+import org.springframework.stereotype.Component;
+
 import com.paceai.core.domain.athlete.Athlete;
 import com.paceai.core.domain.athlete.Profile;
 import com.paceai.core.domain.shared.Email;
 import com.paceai.infra.persistence.postgres.entity.AthleteEntity;
-import org.springframework.stereotype.Component;
 
 @Component
 public class AthleteJpaMapper {
@@ -22,7 +23,7 @@ public class AthleteJpaMapper {
         entity.setEmail(athlete.email() != null ? athlete.email().getValue() : null);
 
         if (athlete.profile() != null) {
-            entity.setVdotScore(athlete.profile().vdotScore() != null ? athlete.profile().vdotScore().doubleValue() : null);
+            entity.setVdotScore(athlete.profile().vdotScore());
             entity.setMaxHeartRate(athlete.profile().maxHeartRate());
             entity.setRestingHeartRate(athlete.profile().restingHeartRate());
             entity.setWeeklyMileage(athlete.profile().weeklyMileage());
@@ -38,19 +39,19 @@ public class AthleteJpaMapper {
 
         Email email = entity.getEmail() != null ? Email.of(entity.getEmail()) : null;
         Profile profile = new Profile(
-                entity.getVdotScore() != null ? java.math.BigDecimal.valueOf(entity.getVdotScore()) : null,
+                entity.getVdotScore(),
                 entity.getMaxHeartRate(),
                 entity.getRestingHeartRate(),
                 entity.getWeeklyMileage()
         );
 
-        return Athlete.builder()
-                .id(com.paceai.core.domain.athlete.AthleteId.of(entity.getId()))
-                .stravaId(entity.getStravaId())
-                .email(email)
-                .profile(profile)
-                .stravaAccessToken(entity.getStravaAccessToken())
-                .stravaRefreshToken(entity.getStravaRefreshToken())
-                .build();
+        return Athlete.reconstitute(
+                com.paceai.core.domain.athlete.AthleteId.of(entity.getId()),
+                entity.getStravaId(),
+                email,
+                profile,
+                entity.getStravaAccessToken(),
+                entity.getStravaRefreshToken()
+        );
     }
 }

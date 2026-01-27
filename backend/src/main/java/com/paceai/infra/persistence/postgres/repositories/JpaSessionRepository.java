@@ -15,20 +15,20 @@ import java.util.UUID;
 @Repository
 public interface JpaSessionRepository extends JpaRepository<SessionEntity, UUID> {
 
-    List<SessionEntity> findByPlanId(UUID planId);
+    List<SessionEntity> findByPlan_Id(UUID planId);
 
-    List<SessionEntity> findByPlanIdOrderByScheduledDateAsc(UUID planId);
+    List<SessionEntity> findByPlan_IdOrderByScheduledDateAsc(UUID planId);
 
-    List<SessionEntity> findByPlanIdAndScheduledDateBetween(
+    List<SessionEntity> findByPlan_IdAndScheduledDateBetween(
             UUID planId,
             LocalDate startDate,
             LocalDate endDate
     );
 
-    List<SessionEntity> findByPlanIdInOrderByScheduledDateAsc(List<UUID> planIds);
+    List<SessionEntity> findByPlan_IdInOrderByScheduledDateAsc(List<UUID> planIds);
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM SessionEntity s WHERE s.planId = :planId")
+    @Query("DELETE FROM SessionEntity s WHERE s.plan.id = :planId")
     void deleteByPlanId(@Param("planId") UUID planId);
 }

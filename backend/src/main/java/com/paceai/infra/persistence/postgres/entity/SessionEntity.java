@@ -2,6 +2,9 @@ package com.paceai.infra.persistence.postgres.entity;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 @Entity
@@ -9,7 +12,6 @@ import java.util.UUID;
 public class SessionEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -27,6 +29,7 @@ public class SessionEntity {
     @Column(name = "status", nullable = false)
     private SessionStatusJpa status;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "details_jsonb", columnDefinition = "jsonb")
     private String detailsJsonb;
 

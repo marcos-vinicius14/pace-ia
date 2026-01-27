@@ -2,6 +2,9 @@ package com.paceai.infra.persistence.postgres.entity;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 @Entity
@@ -12,6 +15,7 @@ public class StravaActivityEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "raw_data_jsonb", columnDefinition = "jsonb", nullable = false)
     private String rawDataJsonb;
 

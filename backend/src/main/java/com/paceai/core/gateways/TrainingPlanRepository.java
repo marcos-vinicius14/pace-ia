@@ -1,11 +1,12 @@
 package com.paceai.core.gateways;
 
-import com.paceai.core.domain.athlete.AthleteId;
-import com.paceai.core.domain.training.plan.TrainingPlan;
-import com.paceai.core.domain.training.TrainingPlanId;
-
 import java.util.List;
 import java.util.Optional;
+
+import com.paceai.core.domain.athlete.AthleteId;
+import com.paceai.core.domain.shared.Result;
+import com.paceai.core.domain.training.plan.TrainingPlan;
+import com.paceai.core.domain.training.TrainingPlanId;
 
 /**
  * Training Plan Repository Port (Interface).
@@ -21,7 +22,7 @@ public interface TrainingPlanRepository {
      * @param plan the plan to save
      * @return the saved plan
      */
-    TrainingPlan save(TrainingPlan plan);
+    Result<TrainingPlan> save(TrainingPlan plan);
 
     /**
      * Finds a plan by its ID.

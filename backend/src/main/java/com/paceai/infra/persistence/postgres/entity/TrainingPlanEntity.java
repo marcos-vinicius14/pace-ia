@@ -2,6 +2,7 @@ package com.paceai.infra.persistence.postgres.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,6 @@ import java.util.UUID;
 public class TrainingPlanEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "athlete_id", nullable = false)
@@ -33,7 +33,7 @@ public class TrainingPlanEntity {
     private String aiModelVersion;
 
     @Column(name = "weekly_volume_km", nullable = false, precision = 10, scale = 2)
-    private Double weeklyVolumeKm;
+    private BigDecimal weeklyVolumeKm;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
@@ -91,11 +91,11 @@ public class TrainingPlanEntity {
         this.aiModelVersion = aiModelVersion;
     }
 
-    public Double getWeeklyVolumeKm() {
+    public BigDecimal getWeeklyVolumeKm() {
         return weeklyVolumeKm;
     }
 
-    public void setWeeklyVolumeKm(Double weeklyVolumeKm) {
+    public void setWeeklyVolumeKm(BigDecimal weeklyVolumeKm) {
         this.weeklyVolumeKm = weeklyVolumeKm;
     }
 

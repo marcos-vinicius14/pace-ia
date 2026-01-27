@@ -11,13 +11,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class PlanGenerationListener {
 
-    // TODO: Inject GeneratePlanService
+    // TODO: Inject GeneratePlanUseCase
 
     // @SqsListener annotation will be added here
     public void onMessage(String message) {
         // TODO: Implement message handling
         // 1. Deserialize message
-        // 2. Call GeneratePlanService
+        // 2. Call GeneratePlanUseCase
         // 3. Handle errors and DLQ
     }
 }
